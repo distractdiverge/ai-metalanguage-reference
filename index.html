@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Special Tokens & ChatML Reference</title>
+    <meta name="description" content="A comprehensive reference guide for special tokens, control tokens, and chat markup used across major Large Language Model families.">
+
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f4f4f5;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a68;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --link-color: #4f46e5;
+            --table-stripe: #f9fafb;
+            --code-text: #e83e8c;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-code: #1e1e32;
+            --text-primary: #e5e5e5;
+            --text-secondary: #a0a0b8;
+            --text-muted: #6b7280;
+            --border-color: #2d2d44;
+            --accent-color: #818cf8;
+            --accent-hover: #a5b4fc;
+            --link-color: #818cf8;
+            --table-stripe: #16162a;
+            --code-text: #f472b6;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background: rgba(var(--bg-primary), 0.9);
+        }
+
+        [data-theme="dark"] header {
+            background: rgba(15, 15, 26, 0.9);
+        }
+
+        [data-theme="light"] header {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sun-icon, .moon-icon {
+            display: none;
+        }
+
+        [data-theme="dark"] .sun-icon {
+            display: block;
+        }
+
+        [data-theme="light"] .moon-icon,
+        :root:not([data-theme]) .moon-icon {
+            display: block;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem 6rem;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            color: var(--text-primary);
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 3rem 0 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .lead {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+            text-align: left;
+            padding: 0.875rem 1rem;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--table-stripe);
+        }
+
+        /* Inline Code */
+        code:not([class*="language-"]) {
+            background: var(--bg-code);
+            color: var(--code-text);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.875em;
+        }
+
+        /* Code Blocks */
+        pre {
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        pre[class*="language-"] {
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        code[class*="language-"],
+        pre[class*="language-"] {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Horizontal Rule */
+        hr {
+            border: none;
+            height: 1px;
+            background: var(--border-color);
+            margin: 3rem 0;
+        }
+
+        /* TOC */
+        .toc {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .toc h2 {
+            font-size: 1rem;
+            margin: 0 0 1rem;
+            padding: 0;
+            border: none;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .toc li {
+            margin: 0.5rem 0;
+        }
+
+        .toc a {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .toc a:hover {
+            color: var(--accent-color);
+        }
+
+        /* Resources Cards */
+        .resources {
+            display: grid;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .resource-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .resource-card:hover {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .resource-card strong {
+            color: var(--text-primary);
+        }
+
+        /* Footer */
+        footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            main {
+                padding: 2rem 1rem 4rem;
+            }
+
+            header {
+                padding: 1rem;
+            }
+
+            .table-wrapper {
+                margin: 1rem -1rem;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+
+            pre[class*="language-"] {
+                border-radius: 0;
+                margin: 1rem -1rem;
+                border-left: none;
+                border-right: none;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            th, td {
+                padding: 0.625rem 0.75rem;
+            }
+        }
+
+        /* Section anchors */
+        h2[id], h3[id] {
+            scroll-margin-top: 80px;
+        }
+
+        /* Quick Reference Card Styling */
+        .quick-ref table code {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="#" class="logo">ChatML Reference</a>
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+                <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+                <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <h1>LLM Special Tokens & ChatML Reference</h1>
+        <p class="lead">A comprehensive reference guide for special tokens, control tokens, and chat markup used across major Large Language Model families.</p>
+
+        <nav class="toc">
+            <h2>Contents</h2>
+            <ul>
+                <li><a href="#what-are-special-tokens">What Are Special Tokens?</a></li>
+                <li><a href="#chatml-openai-style">ChatML / OpenAI Style</a></li>
+                <li><a href="#llama-meta-style">Llama / Meta Style</a></li>
+                <li><a href="#deepseek-style">DeepSeek Style</a></li>
+                <li><a href="#mistral-style">Mistral Style</a></li>
+                <li><a href="#tool-function-calling">Tool & Function Calling Tokens</a></li>
+                <li><a href="#code-fim">Code & Fill-in-the-Middle Tokens</a></li>
+                <li><a href="#vision-multimodal">Vision & Multimodal Tokens</a></li>
+                <li><a href="#bert-style">BERT-Style Tokens</a></li>
+                <li><a href="#reasoning-cot">Reasoning & Chain-of-Thought</a></li>
+                <li><a href="#finding-tokens">How to Find Special Tokens</a></li>
+                <li><a href="#quick-reference">Quick Reference Card</a></li>
+                <li><a href="#tools-resources">Tools & Resources</a></li>
+            </ul>
+        </nav>
+
+        <hr>
+
+        <h2 id="what-are-special-tokens">What Are Special Tokens?</h2>
+        <p>Special tokens are reserved sequences in LLM vocabularies that serve as control signals rather than representing natural language. They tell the model things like:</p>
+        <ul>
+            <li>Where messages start and end</li>
+            <li>Who is speaking (system, user, assistant)</li>
+            <li>When to invoke tools or functions</li>
+            <li>Where images or other media are located</li>
+            <li>When to engage reasoning/thinking modes</li>
+        </ul>
+        <p>These tokens are added to the model's vocabulary during training and have learned semantic meanings. They're essentially "function calls" baked into the tokenizer.</p>
+
+        <hr>
+
+        <h2 id="chatml-openai-style">ChatML / OpenAI Style</h2>
+        <p>The most common format, used by OpenAI models and many open-source models (Qwen, Yi, OpenChat, etc.)</p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Purpose</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>&lt;|im_start|&gt;</code></td><td>Message block start</td><td><code>&lt;|im_start|&gt;user</code></td></tr>
+                    <tr><td><code>&lt;|im_end|&gt;</code></td><td>Message block end</td><td><code>Hello!&lt;|im_end|&gt;</code></td></tr>
+                    <tr><td><code>&lt;|system|&gt;</code></td><td>System role marker</td><td></td></tr>
+                    <tr><td><code>&lt;|user|&gt;</code></td><td>User role marker</td><td></td></tr>
+                    <tr><td><code>&lt;|assistant|&gt;</code></td><td>Assistant role marker</td><td></td></tr>
+                    <tr><td><code>&lt;|endoftext|&gt;</code></td><td>End of generation (EOS)</td><td></td></tr>
+                    <tr><td><code>&lt;|endofprompt|&gt;</code></td><td>End of prompt input</td><td></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>ChatML Format Example</h3>
+        <pre><code class="language-plaintext">&lt;|im_start|&gt;system
+You are a helpful assistant.
+&lt;|im_end|&gt;
+&lt;|im_start|&gt;user
+Hello, how are you?
+&lt;|im_end|&gt;
+&lt;|im_start|&gt;assistant
+I'm doing well, thank you for asking!
+&lt;|im_end|&gt;</code></pre>
+
+        <hr>
+
+        <h2 id="llama-meta-style">Llama / Meta Style</h2>
+        <p>Used by Llama 2, Llama 3, and derivative models.</p>
+
+        <h3>Llama 2 / Alpaca Style</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Token</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>&lt;s&gt;</code></td><td>Start of sequence (BOS)</td></tr>
+                    <tr><td><code>&lt;/s&gt;</code></td><td>End of sequence (EOS)</td></tr>
+                    <tr><td><code>[INST]</code></td><td>Instruction start</td></tr>
+                    <tr><td><code>[/INST]</code></td><td>Instruction end</td></tr>
+                    <tr><td><code>&lt;&lt;SYS&gt;&gt;</code></td><td>System prompt start</td></tr>
+                    <tr><td><code>&lt;&lt;/SYS&gt;&gt;</code></td><td>System prompt end</td></tr>
+                    <tr><td><code>&lt;unk&gt;</code></td><td>Unknown token</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Llama 2 Format Example</h3>
+        <pre><code class="language-plaintext">&lt;s&gt;[INST] &lt;&lt;SYS&gt;&gt;
+You are a helpful assistant.
+&lt;&lt;/SYS&gt;&gt;
+
+Hello, how are you? [/INST] I'm doing well, thank you! &lt;/s&gt;</code></pre>
+
+        <h3>Llama 3 Style</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Token</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>&lt;|begin_of_text|&gt;</code></td><td>Sequence start</td></tr>
+                    <tr><td><code>&lt;|end_of_text|&gt;</code></td><td>Sequence end</td></tr>
+                    <tr><td><code>&lt;|start_header_id|&gt;</code></td><td>Role header start</td></tr>
+                    <tr><td><code>&lt;|end_header_id|&gt;</code></td><td>Role header end</td></tr>
+                    <tr><td><code>&lt;|eot_id|&gt;</code></td><td>End of turn</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Llama 3 Format Example</h3>
+        <pre><code class="language-plaintext">&lt;|begin_of_text|&gt;&lt;|start_header_id|&gt;system&lt;|end_header_id|&gt;
+
+You are a helpful assistant.&lt;|eot_id|&gt;&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;
+
+Hello, how are you?&lt;|eot_id|&gt;&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;
+
+I'm doing well, thank you!&lt;|eot_id|&gt;</code></pre>
+
+        <hr>
+
+        <h2 id="deepseek-style">DeepSeek Style</h2>
+        <p>Used by DeepSeek-V2, DeepSeek-V3, DeepSeek-R1, and related models.</p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Token</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>&lt;｜begin▁of▁sentence｜&gt;</code></td><td>Sequence start (note: special Unicode)</td></tr>
+                    <tr><td><code>&lt;｜end▁of▁sentence｜&gt;</code></td><td>Sequence end</td></tr>
+                    <tr><td><code>&lt;｜User｜&gt;</code></td><td>User turn marker</td></tr>
+                    <tr><td><code>&lt;｜Assistant｜&gt;</code></td><td>Assistant turn marker</td></tr>
+                    <tr><td><code>&lt;think&gt;</code></td><td>Start reasoning/thinking block</td></tr>
+                    <tr><td><code>&lt;/think&gt;</code></td><td>End reasoning/thinking block</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>DeepSeek-R1 Thinking Example</h3>
+        <pre><code class="language-plaintext">&lt;｜User｜&gt;What is 15 * 23?&lt;｜Assistant｜&gt;&lt;think&gt;
+Let me calculate this step by step.
+15 * 23 = 15 * 20 + 15 * 3
+= 300 + 45
+= 345
+&lt;/think&gt;
+The answer is 345.</code></pre>
+
+        <hr>
+
+        <h2 id="mistral-style">Mistral Style</h2>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Token</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>&lt;s&gt;</code></td><td>Start of sequence</td></tr>
+                    <tr><td><code>&lt;/s&gt;</code></td><td>End of sequence</td></tr>
+                    <tr><td><code>[INST]</code></td><td>Instruction start</td></tr>
+                    <tr><td><code>[/INST]</code></td><td>Instruction end</td></tr>
+                    <tr><td><code>[AVAILABLE_TOOLS]</code></td><td>Tool definitions start</td></tr>
+                    <tr><td><code>[/AVAILABLE_TOOLS]</code></td><td>Tool definitions end</td></tr>
+                    <tr><td><code>[TOOL_CALLS]</code></td><td>Tool call output</td></tr>
+                    <tr><td><code>[TOOL_RESULTS]</code></td><td>Tool results input</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr>
+
+        <h2 id="tool-function-calling">Tool & Function Calling Tokens</h2>
+        <p>Used across various models for agentic capabilities.</p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Token</th><th>Purpose</th><th>Models</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>&lt;|tool|&gt;</code></td><td>Tool role marker</td><td>ChatML-based</td></tr>
+                    <tr><td><code>&lt;|function|&gt;</code></td><td>Function role</td><td>ChatML-based</td></tr>
+                    <tr><td><code>&lt;|function_call|&gt;</code></td><td>Signal function invocation</td><td>ChatML-based</td></tr>
+                    <tr><td><code>&lt;tool_call&gt;</code></td><td>Function call wrapper start</td><td>Qwen, DeepSeek</td></tr>
+                    <tr><td><code>&lt;/tool_call&gt;</code></td><td>Function call wrapper end</td><td>Qwen, DeepSeek</td></tr>
+                    <tr><td><code>&lt;tool_response&gt;</code></td><td>Function output start</td><td>Qwen, DeepSeek</td></tr>
+                    <tr><td><code>&lt;/tool_response&gt;</code></td><td>Function output end</td><td>Qwen, DeepSeek</td></tr>
+                    <tr><td><code>&lt;tools&gt;</code></td><td>Tool definitions block start</td><td>Qwen, DeepSeek</td></tr>
+                    <tr><td><code>&lt;/tools&gt;</code></td><td>Tool definitions block end</td><td>Qwen, DeepSeek</td></tr>
+                    <tr><td><code>[TOOL_CALLS]</code></td><td>Tool call marker</td><td>Mistral</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Tool Calling Example (Qwen/DeepSeek)</h3>
+        <pre><code class="language-plaintext">&lt;|im_start|&gt;user
+What's the weather in Tokyo?
+&lt;|im_end|&gt;
+&lt;|im_start|&gt;assistant
+&lt;tool_call&gt;
+{"name": "get_weather", "arguments": {"location": "Tokyo"}}
+&lt;/tool_call&gt;
+&lt;|im_end|&gt;
+&lt;|im_start|&gt;tool
+&lt;tool_response&gt;
+{"temperature": 22, "condition": "sunny"}
+&lt;/tool_response&gt;
+&lt;|im_end|&gt;
+&lt;|im_start|&gt;assistant
+The weather in Tokyo is sunny with a temperature of 22°C.
+&lt;|im_end|&gt;</code></pre>
+
+        <hr>
+
+        <h2 id="code-fim">Code & Fill-in-the-Middle (FIM) Tokens</h2>
+        <p>Used for code completion and infilling tasks.</p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Token</th><th>Purpose</th><th>Models</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>&lt;fim_prefix&gt;</code></td><td>Code before cursor</td><td>StarCoder, CodeLlama</td></tr>
+                    <tr><td><code>&lt;fim_middle&gt;</code></td><td>Where to generate</td><td>StarCoder, CodeLlama</td></tr>
+                    <tr><td><code>&lt;fim_suffix&gt;</code></td><td>Code after cursor</td><td>StarCoder, CodeLlama</td></tr>
+                    <tr><td><code>&lt;|fim_prefix|&gt;</code></td><td>FIM prefix (pipe style)</td><td>Qwen-Coder</td></tr>
+                    <tr><td><code>&lt;|fim_middle|&gt;</code></td><td>FIM middle (pipe style)</td><td>Qwen-Coder</td></tr>
+                    <tr><td><code>&lt;|fim_suffix|&gt;</code></td><td>FIM suffix (pipe style)</td><td>Qwen-Coder</td></tr>
+                    <tr><td><code>&lt;PRE&gt;</code></td><td>Prefix marker</td><td>Some models</td></tr>
+                    <tr><td><code>&lt;SUF&gt;</code></td><td>Suffix marker</td><td>Some models</td></tr>
+                    <tr><td><code>&lt;MID&gt;</code></td><td>Middle marker</td><td>Some models</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>FIM Example</h3>
+        <pre><code class="language-python">&lt;fim_prefix&gt;def hello_world():
+    message = &lt;fim_suffix&gt;
+    print(message)
+&lt;fim_middle&gt;"Hello, World!"</code></pre>
+
+        <hr>
+
+        <h2 id="vision-multimodal">Vision & Multimodal Tokens</h2>
+        <p>Used by Vision-Language Models (VLMs).</p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Token</th><th>Purpose</th><th>Models</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>&lt;image&gt;</code></td><td>Image placeholder</td><td>LLaVA, DeepSeek-VL</td></tr>
+                    <tr><td><code>&lt;|image|&gt;</code></td><td>Image marker (pipe style)</td><td>Various</td></tr>
+                    <tr><td><code>&lt;|vision_start|&gt;</code></td><td>Vision content start</td><td>Qwen-VL</td></tr>
+                    <tr><td><code>&lt;|vision_end|&gt;</code></td><td>Vision content end</td><td>Qwen-VL</td></tr>
+                    <tr><td><code>&lt;|vision_pad|&gt;</code></td><td>Vision padding</td><td>Qwen-VL</td></tr>
+                    <tr><td><code>&lt;|image_pad|&gt;</code></td><td>Image padding</td><td>Various</td></tr>
+                    <tr><td><code>&lt;|grounding|&gt;</code></td><td>Enable bounding box output</td><td>DeepSeek-OCR</td></tr>
+                    <tr><td><code>&lt;|ref|&gt;</code></td><td>Reference marker</td><td>Grounding models</td></tr>
+                    <tr><td><code>&lt;|box|&gt;</code></td><td>Bounding box marker</td><td>Grounding models</td></tr>
+                    <tr><td><code>&lt;|quad|&gt;</code></td><td>Quadrilateral marker</td><td>OCR models</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Vision Example (DeepSeek-OCR)</h3>
+        <pre><code class="language-plaintext">&lt;image&gt;
+Free OCR.</code></pre>
+
+        <pre><code class="language-plaintext">&lt;image&gt;
+&lt;|grounding|&gt;Convert the document to markdown.</code></pre>
+
+        <hr>
+
+        <h2 id="bert-style">BERT-Style Tokens (Encoder Models)</h2>
+        <p>Used primarily in encoder-only models for classification, NER, etc.</p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Token</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>[CLS]</code></td><td>Classification token (sequence start)</td></tr>
+                    <tr><td><code>[SEP]</code></td><td>Separator between segments</td></tr>
+                    <tr><td><code>[MASK]</code></td><td>Masked token for MLM training</td></tr>
+                    <tr><td><code>[PAD]</code></td><td>Padding token</td></tr>
+                    <tr><td><code>[UNK]</code></td><td>Unknown token</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr>
+
+        <h2 id="reasoning-cot">Reasoning & Chain-of-Thought Tokens</h2>
+        <p>Used by reasoning models to separate thinking from final answers.</p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Token</th><th>Purpose</th><th>Models</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>&lt;think&gt;</code></td><td>Start thinking/reasoning</td><td>DeepSeek-R1, QwQ</td></tr>
+                    <tr><td><code>&lt;/think&gt;</code></td><td>End thinking/reasoning</td><td>DeepSeek-R1, QwQ</td></tr>
+                    <tr><td><code>&lt;reasoning&gt;</code></td><td>Reasoning block start</td><td>Some models</td></tr>
+                    <tr><td><code>&lt;/reasoning&gt;</code></td><td>Reasoning block end</td><td>Some models</td></tr>
+                    <tr><td><code>&lt;scratchpad&gt;</code></td><td>Internal working space</td><td>Some fine-tunes</td></tr>
+                    <tr><td><code>&lt;/scratchpad&gt;</code></td><td>End scratchpad</td><td>Some fine-tunes</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr>
+
+        <h2 id="finding-tokens">How to Find Special Tokens for Any Model</h2>
+
+        <h3>From HuggingFace Model Files</h3>
+        <p>Look for these files in the model repository:</p>
+        <ul>
+            <li><code>tokenizer.json</code> - Contains full vocabulary and special tokens</li>
+            <li><code>tokenizer_config.json</code> - Special token mappings</li>
+            <li><code>special_tokens_map.json</code> - Explicit special token definitions</li>
+            <li><code>generation_config.json</code> - Generation-related tokens</li>
+            <li><code>chat_template.jinja</code> - Jinja2 template showing token usage</li>
+        </ul>
+
+        <h3>Example: Extracting from tokenizer_config.json</h3>
+        <pre><code class="language-json">{
+  "bos_token": "&lt;|im_start|&gt;",
+  "eos_token": "&lt;|im_end|&gt;",
+  "pad_token": "&lt;|endoftext|&gt;",
+  "chat_template": "{% for message in messages %}..."
+}</code></pre>
+
+        <h3>Using Python</h3>
+        <pre><code class="language-python">from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("model-name")
+
+# View all special tokens
+print(tokenizer.special_tokens_map)
+print(tokenizer.all_special_tokens)
+
+# View chat template
+print(tokenizer.chat_template)</code></pre>
+
+        <hr>
+
+        <h2 id="quick-reference" class="quick-ref">Quick Reference Card</h2>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Model Family</th>
+                        <th>BOS</th>
+                        <th>EOS</th>
+                        <th>Roles</th>
+                        <th>Style</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ChatML/OpenAI</td>
+                        <td><code>&lt;|im_start|&gt;</code></td>
+                        <td><code>&lt;|im_end|&gt;</code></td>
+                        <td>In token</td>
+                        <td><code>&lt;|im_start|&gt;role</code></td>
+                    </tr>
+                    <tr>
+                        <td>Llama 2</td>
+                        <td><code>&lt;s&gt;</code></td>
+                        <td><code>&lt;/s&gt;</code></td>
+                        <td><code>[INST]</code> tags</td>
+                        <td><code>[INST] text [/INST]</code></td>
+                    </tr>
+                    <tr>
+                        <td>Llama 3</td>
+                        <td><code>&lt;|begin_of_text|&gt;</code></td>
+                        <td><code>&lt;|eot_id|&gt;</code></td>
+                        <td>Header tags</td>
+                        <td><code>&lt;|start_header_id|&gt;role&lt;|end_header_id|&gt;</code></td>
+                    </tr>
+                    <tr>
+                        <td>Mistral</td>
+                        <td><code>&lt;s&gt;</code></td>
+                        <td><code>&lt;/s&gt;</code></td>
+                        <td><code>[INST]</code> tags</td>
+                        <td>Llama 2 style</td>
+                    </tr>
+                    <tr>
+                        <td>DeepSeek</td>
+                        <td><code>&lt;｜begin▁of▁sentence｜&gt;</code></td>
+                        <td><code>&lt;｜end▁of▁sentence｜&gt;</code></td>
+                        <td>Special markers</td>
+                        <td><code>&lt;｜User｜&gt;</code> / <code>&lt;｜Assistant｜&gt;</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr>
+
+        <h2 id="tools-resources">Tools & Resources</h2>
+
+        <div class="resources">
+            <a href="https://tokenbuster.sentry.security" class="resource-card" target="_blank" rel="noopener">
+                <strong>TokenBuster</strong> — Browser tool with 200+ model configs
+            </a>
+            <a href="https://huggingface.co/docs/tokenizers" class="resource-card" target="_blank" rel="noopener">
+                <strong>HuggingFace Tokenizers</strong> — Official tokenizers documentation
+            </a>
+            <a href="https://huggingface.co/docs/transformers/en/chat_templating" class="resource-card" target="_blank" rel="noopener">
+                <strong>Jinja Chat Templates</strong> — Chat templating guide
+            </a>
+            <a href="https://github.com/jndiogo/LLM-chat-templates" class="resource-card" target="_blank" rel="noopener">
+                <strong>LLM Chat Templates Repo</strong> — Community collection of templates
+            </a>
+        </div>
+
+        <hr>
+
+        <h2>Contributing</h2>
+        <p>This reference is maintained as a community resource. Found an error or want to add a model? Contributions welcome!</p>
+    </main>
+
+    <footer>
+        <p>Last updated: January 2026</p>
+        <p>Sources: HuggingFace documentation, model repositories, Sentry Security research, community contributions</p>
+    </footer>
+
+    <!-- Prism.js for syntax highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+
+    <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Load saved theme or default to system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        }
+
+        // Initialize theme on page load
+        initTheme();
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+            }
+        });
+    </script>
+</body>
+</html>
